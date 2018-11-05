@@ -3,6 +3,9 @@ import numpy as np
 from urllib.request import urlopen as request
 from bs4 import BeautifulSoup as soup
 
+from sklearn.linear_model import LogisticRegression
+
+
 # our goal: beginning with just 2017
 # ----------------------------------------------------------------
 # scrape relevant data from the internet involivng qb rating
@@ -25,7 +28,8 @@ client.close()
 page_content = soup(page_html, "html.parser")
 
 # create matrix
-matrix = np.ones((90,7))
+xvec = np.ones((90,6))
+yvec = np.ones((90,1))
 
 # get all rows
 player_row = page_content.findAll('table')[0].find_all('tr')
@@ -45,36 +49,46 @@ for i in range(len(player_row)):
         if(row_data[1].text == 'QB'):
             # fill matrix row w data
             cmp_percentage = row_data[14].text
-            matrix[row][col] = cmp_percentage
+            xvec[row][col] = cmp_percentage
             col+=1
 
             yds = row_data[15].text
-            matrix[row][col] = yds
+            xvec[row][col] = yds
             col+=1
 
             tds = row_data[16].text
-            matrix[row][col] = tds
-            col+=1
+            # build yvec - tds as a result of qbr & other stats
+            yvec[row][0] = tds
 
             ints = row_data[17].text
-            matrix[row][col] = ints
+            xvec[row][col] = ints
             col+=1
 
-            rate = row_data[18].text
-            matrix[row][col] = rate
+            qbr = row_data[18].text
+            xvec[row][col] = qbr
             col+=1
 
             times_sacked = row_data[19].text
-            matrix[row][col] = times_sacked
+            xvec[row][col] = times_sacked
             col+=1
 
             #skipped 20 since not relevant
             yds_per_pass = row_data[21].text
-            matrix[row][col] = yds_per_pass
+            xvec[row][col] = yds_per_pass
             # reset column count to 0 for next row
             col=0
             row+=1
+            # ******************************************************************
+                                # end build vectors
+            # ******************************************************************
 
-            #print(row_data[0].text + ': ' + cmp_percentage + ', ' + yds + ', ' + tds + ', ' + ints + ', ' + rate + ', ' + times_sacked + ', ' + yds_per_pass + '\n')
 
-print(matrix)
+        # run LogisticRegression
+        #-------------------------------------------------------------------
+        clf = LogisticRegression(random_state=0, solver='lbfgs', max_iter=100, multi_class='multinomial').fit(xvec, yvec)
+
+
+
+# print both x and y vec
+print(xvec)
+print(yvec)
