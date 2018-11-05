@@ -2,8 +2,7 @@ import bs4
 import numpy as np
 from urllib.request import urlopen as request
 from bs4 import BeautifulSoup as soup
-
-from sklearn.linear_model import LogisticRegression
+from sklearn.linear_model import LinearRegression
 
 
 # our goal: beginning with just 2017
@@ -30,6 +29,10 @@ page_content = soup(page_html, "html.parser")
 # create matrix
 xvec = np.ones((90,6))
 yvec = np.ones((90,1))
+
+xvec.astype(float)
+yvec.astype(float)
+
 
 # get all rows
 player_row = page_content.findAll('table')[0].find_all('tr')
@@ -85,10 +88,19 @@ for i in range(len(player_row)):
 
         # run LogisticRegression
         #-------------------------------------------------------------------
-        clf = LogisticRegression(random_state=0, solver='lbfgs', max_iter=100, multi_class='multinomial').fit(xvec, yvec)
+        reg = LinearRegression().fit(xvec, yvec)
+        reg.score(xvec,yvec)
+
+        # run test test data
+        # predictx = pass row of (cmp%, yds, ints, qbr, sakcedx, ydsperpass)
+        # then call:
+        # tdprediciton = reg.predict(predictx)
+        #model = LogisticRegression(random_state=0, solver='lbfgs', max_iter=100, multi_class='multinomial').fit(xvec, yvec.ravel())
+
+        # THEN LOAD WAY MORE DATA AND TEST AGAIN!!!!
 
 
 
 # print both x and y vec
-print(xvec)
-print(yvec)
+#print(xvec)
+#print(yvec)
